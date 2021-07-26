@@ -5,7 +5,7 @@ import pyqtgraph as pg
 import lasio
 
 from myapp_ui import MyAppUI, ProjType
-from funcs import get_mean_custom, get_std_custom, get_median_custom
+from funcs import get_mean_custom, get_std_custom, get_median_custom, get_mean_np, get_std_np, get_median_np
 
 
 class MyApp(MyAppUI):
@@ -16,8 +16,10 @@ class MyApp(MyAppUI):
         self.file_name = None
         # Словарь, который хранит загруженные из las-файла данные
         self.data = {}
-        # Словарь, который хранит параметры (mean, std, median) каждой кривой из las-файла
-        self.data_params = {}
+        # Словарь, который хранит параметры (mean, std, median) каждой кривой из las-файла (кастомные функции)
+        self.data_params_c = {}
+        # Словарь, который хранит параметры (mean, std, median) каждой кривой из las-файла (numpy функции)
+        self.data_params_np = {}
 
         # Количество строк и столбцов в таблице из данных las-файла
         self.ncols = 0
@@ -52,9 +54,12 @@ class MyApp(MyAppUI):
                     self.nrows = len(curve.data)
 
                     self.data[curve.mnemonic] = curve.data
-                    self.data_params[curve.mnemonic] = [get_mean_custom(curve.data),
-                                                        get_std_custom(curve.data),
-                                                        get_median_custom(curve.data)]
+                    self.data_params_c[curve.mnemonic] = [get_mean_custom(curve.data),
+                                                          get_std_custom(curve.data),
+                                                          get_median_custom(curve.data)]
+                    self.data_params_np[curve.mnemonic] = [get_mean_np(curve.data),
+                                                           get_std_np(curve.data),
+                                                           get_median_np(curve.data)]
 
                 # Заполняем таблицу с параметрами кривых (mean, std, median)
                 self.fill_table_params()
@@ -69,7 +74,7 @@ class MyApp(MyAppUI):
         """
         Создает ячейку таблицы и заполняет её значением value
         :param value: число, которое должно быть записано в текущей ячейке, float
-        :return: объект ячейки таблицы, QTableWidgetItem
+        :return: ячейка таблицы - объект класса QTableWidgetItem
         """
         item = QtWidgets.QTableWidgetItem()
         item.setText(str(value))
@@ -81,15 +86,25 @@ class MyApp(MyAppUI):
 
     def fill_table_params(self):
         """ Заполнение таблицы с параметрами траектории скважины """
-        # Устанавливаем количество строк и задаем подписи горизонтальной шапки таблицы названиями колонок из las-файла
-        self.table_params.setColumnCount(len(self.data))
-        self.table_params.setHorizontalHeaderLabels(self.data.keys())
+        def fill_table(table, data_params):
+            """
+            Заполнение таблицы table табвиджета self.tab_params данными из словаря data_params
+            :param table: таблица из табвиджета, QTableWidget
+            :param data_params: словарь с параметрами траектории, dict
+            """
+            # Устанавливаем количество строк и задаем подписи горизонтальной шапки таблицы названиями колонок из
+            # las-файла
+            table.setColumnCount(len(data_params))
+            table.setHorizontalHeaderLabels(data_params.keys())
 
-        for row in range(0, 3):
-            for col, name in enumerate(self.data.keys()):
-                value = np.around(self.data_params[name][row], 2)
-                item = self._get_table_item(value)
-                self.table_params.setItem(row, col, item)
+            for row in range(0, 3):
+                for col, name in enumerate(data_params.keys()):
+                    value = np.around(data_params[name][row], 2)
+                    item = self._get_table_item(value)
+                    table.setItem(row, col, item)
+
+        fill_table(self.table_params_c, self.data_params_c)
+        fill_table(self.table_params_np, self.data_params_np)
 
     def fill_table_trj(self):
         """ Заполнение таблицы траекторией скважины """
@@ -113,7 +128,7 @@ class MyApp(MyAppUI):
             """
             Возаращает данные по типу проекции
             :param proj_type: тип проекции, ProjType
-            :return: кортеж из двух списков, tupe(np.array, np.array)
+            :return: кортеж из двух списков, tuple(np.array, np.array)
             """
             if proj_type == ProjType.MD_INCL:
                 data = (self.data['MD'], self.data['INCL'])

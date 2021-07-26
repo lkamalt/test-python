@@ -36,23 +36,27 @@ class MyAppUI(QtWidgets.QWidget):
         self.hgrid_file.addWidget(self.edit_file_path)
         self.hgrid_file.addWidget(self.button_browse)
 
-        # Таблица для отображения параметров траектории -------------------------------------------
-        self.table_params = QtWidgets.QTableWidget()
-        # Устанавливаем количество столбцов и подписи вертикальной шапки таблицы
-        self.table_params.setRowCount(3)
-        self.table_params.setColumnCount(3)
-        self.table_params.setVerticalHeaderLabels(['mean', 'std', 'median'])
-        self.table_params.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.table_params.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        # Таблицы для отображения параметров траектории -------------------------------------------
+        self.tab_params = QtWidgets.QTabWidget()
+        self.tab_params.setTabPosition(QtWidgets.QTabWidget.South)
 
-        # виджет для графика
+        # Таблица, вычисленная кастомными функциями
+        self.table_params_c = self._get_table_params()
+        # Таблица, вычисленная функциями numpy
+        self.table_params_np = self._get_table_params()
+
+        self.tab_params.addTab(self.table_params_c, 'Пользовательские функции')
+        self.tab_params.addTab(self.table_params_np, 'Numpy')
+
+        # Виджеты для графиков
         self.chart1 = self._get_chart(ProjType.MD_INCL)
         self.chart2 = self._get_chart(ProjType.MD_AZIM)
         self.chart3 = self._get_chart(ProjType.AZIM_INCL)
 
         # Вертикальная сетка для таблицы с параметрами и виджета с графиком
         self.vgrid_table_params_and_graph = QtWidgets.QVBoxLayout()
-        self.vgrid_table_params_and_graph.addWidget(self.table_params, 1)
+        # Добавление табвиджета с таблицами параметров траектории
+        self.vgrid_table_params_and_graph.addWidget(self.tab_params, 1)
         # Добавление виджетов с графиками
         self.vgrid_table_params_and_graph.addWidget(self.chart1, 2)
         self.vgrid_table_params_and_graph.addWidget(self.chart2, 2)
@@ -62,7 +66,7 @@ class MyAppUI(QtWidgets.QWidget):
         self.table_trj = QtWidgets.QTableWidget()
         self.table_trj.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
 
-        # Горизонтальная сетка для сетки с таблицей параметров и графиком и таблицы с таректорией
+        # Горизонтальная сетка для сетки с табвиджетом и графиком и таблицы с таректорией
         self.hgrid_trj = QtWidgets.QHBoxLayout()
         self.hgrid_trj.addLayout(self.vgrid_table_params_and_graph)
         self.hgrid_trj.addWidget(self.table_trj)
@@ -117,3 +121,18 @@ class MyAppUI(QtWidgets.QWidget):
         left_axis.setPen(axis_pen)
 
         return chart
+
+    def _get_table_params(self):
+        """
+        Создание таблицы для отображения параметров траектории (mean, std, median)
+        :return: таблица - объект класса QTableWidget
+        """
+        table_params = QtWidgets.QTableWidget()
+        # Устанавливаем количество столбцов и подписи вертикальной шапки таблицы
+        table_params.setRowCount(3)
+        table_params.setColumnCount(3)
+        table_params.setVerticalHeaderLabels(['Среднее', 'СКО', 'Медиана'])
+        table_params.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        table_params.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+        return table_params
