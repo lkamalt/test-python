@@ -46,6 +46,9 @@ class MyApp(MyAppUI):
             # Если файл не был выбран, то возвращается список из двух пустых строк, поэтому нужно проверить
             # что первый элемент - название файла не является пустой строкой
             if file_names[0] != '':
+                # Очистка переменных, таблиц и графиков
+                self._clear()
+
                 self.file_name = file_names[0]
                 self.edit_file_path.setText(self.file_name)
 
@@ -99,6 +102,23 @@ class MyApp(MyAppUI):
         # Ячейки таблицы делаем нередактируемыми
         item.setFlags(item.flags() & ~Qt.ItemIsEditable)
         return item
+
+    def _clear(self):
+        """ Очистка переменных, графиков и таблиц """
+        # Сбрасываем счетчик числа столбцов
+        self.ncols = 0
+
+        # Очистка словарей
+        for d in [self.data, self.data_params_c, self.data_params_np]:
+            d.clear()
+
+        # Очистка таблиц
+        for t in [self.table_trj, self.table_params_c, self.table_params_np]:
+            t.clear()
+
+        # Очистка графиков
+        for c in [self.chart_md_incl, self.chart_md_azim, self.chart_azim_incl]:
+            c.clear()
 
     def fill_table_params(self):
         """ Заполнение таблицы с параметрами траектории скважины """

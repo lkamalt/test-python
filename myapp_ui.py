@@ -54,6 +54,16 @@ class MyAppUI(QtWidgets.QWidget):
         self.chart_md_azim = self._get_chart(ProjType.MD_AZIM)
         self.chart_azim_incl = self._get_chart(ProjType.AZIM_INCL)
 
+        # Вертикальная сетка для графиков
+        vgrid_charts = QtWidgets.QVBoxLayout()
+        vgrid_charts.addWidget(self.chart_md_incl, 1)
+        vgrid_charts.addWidget(self.chart_md_azim, 1)
+        vgrid_charts.addWidget(self.chart_azim_incl, 1)
+
+        # Виджет, содержащий графики
+        self.widget_charts = QtWidgets.QWidget()
+        self.widget_charts.setLayout(vgrid_charts)
+
         # Кнопки для переключения проекций --------------------------------------------------------
         self.tbutton_md_incl = self._get_tool_button('MD-INCL')
         self.tbutton_md_azim = self._get_tool_button('MD-AZIM')
@@ -69,11 +79,9 @@ class MyAppUI(QtWidgets.QWidget):
         # Вертикальная сетка для таблицы с параметрами и виджета с графиком
         vgrid_table_params_and_graph = QtWidgets.QVBoxLayout()
         # Добавление табвиджета с таблицами параметров траектории
-        vgrid_table_params_and_graph.addWidget(self.tab_params, 1)
-        # Добавление виджетов с графиками
-        vgrid_table_params_and_graph.addWidget(self.chart_md_incl, 2)
-        vgrid_table_params_and_graph.addWidget(self.chart_md_azim, 2)
-        vgrid_table_params_and_graph.addWidget(self.chart_azim_incl, 2)
+        vgrid_table_params_and_graph.addWidget(self.tab_params)
+        # Добавление виджета с графиками
+        vgrid_table_params_and_graph.addWidget(self.widget_charts)
         # Добавление кнопок для управления видимостью проекций
         vgrid_table_params_and_graph.addLayout(hgrid_tbuttons)
 
