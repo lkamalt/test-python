@@ -4,7 +4,7 @@ import numpy as np
 import pyqtgraph as pg
 import lasio
 
-from myapp_ui import MyAppUI, ProjType
+from myapp_ui import MyAppUI, ProjType, table_params_header
 from funcs import get_mean_custom, get_std_custom, get_median_custom, get_mean_np, get_std_np, get_median_np
 
 
@@ -128,6 +128,8 @@ class MyApp(MyAppUI):
             :param table: таблица из табвиджета, QTableWidget
             :param data_params: словарь с параметрами траектории, dict
             """
+            table.setVerticalHeaderLabels(table_params_header)
+
             # Устанавливаем количество строк и задаем подписи горизонтальной шапки таблицы названиями колонок из
             # las-файла
             table.setColumnCount(len(data_params))

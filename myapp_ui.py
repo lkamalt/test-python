@@ -6,6 +6,9 @@ class ProjType(object):
     MD_INCL, MD_AZIM, AZIM_INCL = range(3)
 
 
+table_params_header = ['Среднее', 'СКО', 'Медиана']
+
+
 class MyAppUI(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
@@ -154,7 +157,7 @@ class MyAppUI(QtWidgets.QWidget):
         # Устанавливаем количество столбцов и подписи вертикальной шапки таблицы
         table_params.setRowCount(3)
         table_params.setColumnCount(3)
-        table_params.setVerticalHeaderLabels(['Среднее', 'СКО', 'Медиана'])
+        table_params.setVerticalHeaderLabels(table_params_header)
         table_params.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
         table_params.setFixedHeight(150)
 
