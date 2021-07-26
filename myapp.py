@@ -18,6 +18,10 @@ class MyApp(MyAppUI):
         # Словарь, который хранит параметры (mean, std, median) каждой кривой из las-файла
         self.data_params = {}
 
+        # Количество строк и столбцов в таблице из данных las-файла
+        self.ncols = 0
+        self.nrows = 0
+
         self.connect_signals()
 
     def connect_signals(self):
@@ -43,6 +47,9 @@ class MyApp(MyAppUI):
 
                 # Заносим загруженные из файла данные в словарь
                 for curve in las.curves:
+                    self.ncols += 1
+                    self.nrows = len(curve.data)
+
                     self.data[curve.mnemonic] = curve.data
                     self.data_params[curve.mnemonic] = [get_mean_custom(curve.data),
                                                         get_std_custom(curve.data),
@@ -51,22 +58,25 @@ class MyApp(MyAppUI):
                 # Заполняем таблицу с параметрами кривых (mean, std, median)
                 self.fill_table_params()
 
+                # Заполняем таблицу с загруженной траекторией
+                self.fill_table_trj()
+
+    def _get_table_item(self, value):
+        """
+        Создает ячейку таблицы и заполняет её значением value
+        :param value: число, которое должно быть записано в текущей ячейке, float
+        :return: объект ячейки таблицы, QTableWidgetItem
+        """
+        item = QtWidgets.QTableWidgetItem()
+        item.setText(str(value))
+        # Включаем в ячейке выравнивание текста по центру
+        item.setTextAlignment(Qt.AlignCenter)
+        # Ячейки таблицы делаем нередактируемыми
+        item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+        return item
+
     def fill_table_params(self):
         """ Заполнение таблицы с параметрами траектории скважины """
-        def get_table_item(value):
-            """
-            Создает ячейку таблицы и заполняет её значением value
-            :param value: число, которое должно быть записано в текущей ячейке, float
-            :return: объект ячейки таблицы, QTableWidgetItem
-            """
-            item = QtWidgets.QTableWidgetItem()
-            item.setText(str(value))
-            # Включаем в ячейке выравнивание текста по центру
-            item.setTextAlignment(Qt.AlignCenter)
-            # Ячейки таблицы делаем нередактируемыми
-            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-            return item
-
         # Устанавливаем количество строк и задаем подписи горизонтальной шапки таблицы названиями колонок из las-файла
         self.table_params.setColumnCount(len(self.data))
         self.table_params.setHorizontalHeaderLabels(self.data.keys())
@@ -74,5 +84,21 @@ class MyApp(MyAppUI):
         for row in range(0, 3):
             for col, name in enumerate(self.data.keys()):
                 value = np.around(self.data_params[name][row], 2)
-                item = get_table_item(value)
+                item = self._get_table_item(value)
                 self.table_params.setItem(row, col, item)
+
+    def fill_table_trj(self):
+        # Устанавливаем число столбцов и строк
+        self.table_trj.setColumnCount(self.ncols)
+        self.table_trj.setRowCount(self.nrows)
+
+        # Задаем названия столбцов в шапке таблицы названиями из las-файла
+        self.table_trj.setHorizontalHeaderLabels(self.data.keys())
+
+        # Заполнение таблицы
+        for row in range(0, self.nrows):
+            for col, name in enumerate(self.data.keys()):
+                value = np.around(self.data[name][row], 2)
+                item = self._get_table_item(value)
+                self.table_trj.setItem(row, col, item)
+

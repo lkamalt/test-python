@@ -40,9 +40,26 @@ class MyAppUI(QtWidgets.QWidget):
         # self.table_params.resizeRowsToContents()
         self.table_params.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
 
+        # виджет для графика
+
+        # Вертикальная сетка для таблицы с параметрами и виджета с графиком
+        self.vgrid_table_params_and_graph = QtWidgets.QVBoxLayout()
+        # тут будет добавление виджета с графиком
+        # Добавляем виджет с таблицей параметров
+        self.vgrid_table_params_and_graph.addWidget(self.table_params)
+
+        # Таблица для отображения загруженных из las-файла данных
+        self.table_trj = QtWidgets.QTableWidget()
+
+        # Горизонтальная сетка для сетки с таблицей параметров и графиком и таблицы с таректорией
+        self.hgrid_trj = QtWidgets.QHBoxLayout()
+        self.hgrid_trj.addLayout(self.vgrid_table_params_and_graph)
+        self.hgrid_trj.addWidget(self.table_trj)
+
         # Вертикальная сетка - основная -----------------------------------------------------------
         self.vgrid = QtWidgets.QVBoxLayout()
         self.vgrid.addLayout(self.hgrid_file)
         self.vgrid.addWidget(self.table_params)
+        self.vgrid.addLayout(self.hgrid_trj)
 
         self.setLayout(self.vgrid)
