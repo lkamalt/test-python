@@ -47,6 +47,8 @@ class MyAppUI(QtWidgets.QWidget):
         self.tab_params.addTab(self.table_params_c, 'Пользовательские функции')
         self.tab_params.addTab(self.table_params_np, 'Numpy')
 
+        self.tab_params.setFixedHeight(self.table_params_c.height())
+
         # Виджеты для графиков --------------------------------------------------------------------
         self.chart_md_incl = self._get_chart(ProjType.MD_INCL)
         self.chart_md_azim = self._get_chart(ProjType.MD_AZIM)
@@ -146,7 +148,7 @@ class MyAppUI(QtWidgets.QWidget):
         table_params.setColumnCount(3)
         table_params.setVerticalHeaderLabels(['Среднее', 'СКО', 'Медиана'])
         table_params.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-        table_params.resizeRowsToContents()
+        table_params.setFixedHeight(150)
 
         return table_params
 
