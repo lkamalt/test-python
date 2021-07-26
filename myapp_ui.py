@@ -1,4 +1,9 @@
 from PyQt5 import QtWidgets, QtGui
+import pyqtgraph as pg
+
+
+class ProjType(object):
+    MD_INCL, MD_AZIM, AZIM_INCL = range(3)
 
 
 class MyAppUI(QtWidgets.QWidget):
@@ -35,21 +40,27 @@ class MyAppUI(QtWidgets.QWidget):
         self.table_params = QtWidgets.QTableWidget()
         # Устанавливаем количество столбцов и подписи вертикальной шапки таблицы
         self.table_params.setRowCount(3)
+        self.table_params.setColumnCount(3)
         self.table_params.setVerticalHeaderLabels(['mean', 'std', 'median'])
-        # self.table_params.resizeColumnsToContents()
-        # self.table_params.resizeRowsToContents()
-        self.table_params.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.table_params.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.table_params.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
         # виджет для графика
+        self.chart1 = self._get_chart(ProjType.MD_INCL)
+        self.chart2 = self._get_chart(ProjType.MD_AZIM)
+        self.chart3 = self._get_chart(ProjType.AZIM_INCL)
 
         # Вертикальная сетка для таблицы с параметрами и виджета с графиком
         self.vgrid_table_params_and_graph = QtWidgets.QVBoxLayout()
-        # тут будет добавление виджета с графиком
-        # Добавляем виджет с таблицей параметров
-        self.vgrid_table_params_and_graph.addWidget(self.table_params)
+        self.vgrid_table_params_and_graph.addWidget(self.table_params, 1)
+        # Добавление виджетов с графиками
+        self.vgrid_table_params_and_graph.addWidget(self.chart1, 2)
+        self.vgrid_table_params_and_graph.addWidget(self.chart2, 2)
+        self.vgrid_table_params_and_graph.addWidget(self.chart3, 2)
 
         # Таблица для отображения загруженных из las-файла данных
         self.table_trj = QtWidgets.QTableWidget()
+        self.table_trj.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
 
         # Горизонтальная сетка для сетки с таблицей параметров и графиком и таблицы с таректорией
         self.hgrid_trj = QtWidgets.QHBoxLayout()
@@ -59,7 +70,50 @@ class MyAppUI(QtWidgets.QWidget):
         # Вертикальная сетка - основная -----------------------------------------------------------
         self.vgrid = QtWidgets.QVBoxLayout()
         self.vgrid.addLayout(self.hgrid_file)
-        self.vgrid.addWidget(self.table_params)
         self.vgrid.addLayout(self.hgrid_trj)
 
         self.setLayout(self.vgrid)
+
+    def _get_chart(self, proj_type):
+        """
+        Возвращает чарт - объект класса pg.PlotItem для отрисовки данных в зависимости от типа проекции
+        :param proj_type: тип проекции, ProjType
+        :return: объект класса pg.PlotItem
+        """
+        chart = pg.PlotWidget()
+        chart.setBackground(pg.mkColor(255, 255, 255))
+        plot_item = chart.getPlotItem()
+        plot_item.showGrid(True, True, 0.5)
+
+        label_color = {'color': (0, 0, 0)}
+        bottom_units = 'м'
+        left_units = u'\N{DEGREE SIGN}'
+
+        if proj_type == ProjType.MD_INCL:
+            plot_item.setTitle('Проекция MD-INCL', **label_color)
+            bottom_axis_name = 'MD'
+            left_axis_name = 'INCL'
+        elif proj_type == ProjType.MD_AZIM:
+            plot_item.setTitle('Проекция MD-AZIM', **label_color)
+            bottom_axis_name = 'MD'
+            left_axis_name = 'AZIM'
+        else:
+            plot_item.setTitle('Проекция AZIM-INCL', **label_color)
+            bottom_axis_name = 'AZIM'
+            left_axis_name = 'INCL'
+            bottom_units = u'\N{DEGREE SIGN}'
+
+        # Нижняя и левая оси
+        bottom_axis = plot_item.getAxis('bottom')
+        left_axis = plot_item.getAxis('left')
+
+        # Задаем осям названия
+        bottom_axis.setLabel(bottom_axis_name, bottom_units, **label_color)
+        left_axis.setLabel(left_axis_name, left_units, **label_color)
+
+        # Задаем осям стиль
+        axis_pen = pg.mkPen(color=(0, 0, 0), width=1)
+        bottom_axis.setPen(axis_pen)
+        left_axis.setPen(axis_pen)
+
+        return chart

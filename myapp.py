@@ -1,9 +1,10 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 import numpy as np
+import pyqtgraph as pg
 import lasio
 
-from myapp_ui import MyAppUI
+from myapp_ui import MyAppUI, ProjType
 from funcs import get_mean_custom, get_std_custom, get_median_custom
 
 
@@ -61,6 +62,9 @@ class MyApp(MyAppUI):
                 # Заполняем таблицу с загруженной траекторией
                 self.fill_table_trj()
 
+                # Отрисовка линий
+                self.draw_curves()
+
     def _get_table_item(self, value):
         """
         Создает ячейку таблицы и заполняет её значением value
@@ -88,6 +92,7 @@ class MyApp(MyAppUI):
                 self.table_params.setItem(row, col, item)
 
     def fill_table_trj(self):
+        """ Заполнение таблицы траекторией скважины """
         # Устанавливаем число столбцов и строк
         self.table_trj.setColumnCount(self.ncols)
         self.table_trj.setRowCount(self.nrows)
@@ -102,3 +107,25 @@ class MyApp(MyAppUI):
                 item = self._get_table_item(value)
                 self.table_trj.setItem(row, col, item)
 
+    def draw_curves(self):
+        """ Отрисовка кривых """
+        def get_curve(proj_type):
+            """
+            Возаращает данные по типу проекции
+            :param proj_type: тип проекции, ProjType
+            :return: кортеж из двух списков, tupe(np.array, np.array)
+            """
+            if proj_type == ProjType.MD_INCL:
+                data = (self.data['MD'], self.data['INCL'])
+            elif proj_type == ProjType.MD_AZIM:
+                data = (self.data['MD'], self.data['AZIM'])
+            else:
+                data = (self.data['AZIM'], self.data['INCL'])
+
+            plot_curve_item = pg.PlotCurveItem(*data)
+            plot_curve_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
+            return plot_curve_item
+
+        self.chart1.addItem(get_curve(ProjType.MD_INCL))
+        self.chart2.addItem(get_curve(ProjType.MD_AZIM))
+        self.chart3.addItem(get_curve(ProjType.AZIM_INCL))
