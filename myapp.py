@@ -28,9 +28,13 @@ class MyApp(MyAppUI):
         self.connect_signals()
 
     def connect_signals(self):
-        self.button_browse.clicked.connect(self.browse_to_open)
+        """ Подключение сигналов к слотам """
+        self.button_browse.clicked.connect(self._on_clicked_to_open)
+        self.tbutton_md_incl.toggled.connect(self._on_proj_visibility_changed)
+        self.tbutton_md_azim.toggled.connect(self._on_proj_visibility_changed)
+        self.tbutton_azim_incl.toggled.connect(self._on_proj_visibility_changed)
 
-    def browse_to_open(self):
+    def _on_clicked_to_open(self):
         """ Слот, срабатывающий при нажатии на кнопку 'Обзор...' """
         # Маска, чтобы пользователь мог выбирать только las-файлы
         filters = "Las files (*.las)"
@@ -69,6 +73,18 @@ class MyApp(MyAppUI):
 
                 # Отрисовка линий
                 self.draw_curves()
+
+    def _on_proj_visibility_changed(self, is_toggled):
+        """ Слот, срабатывающий при нажатии на кнопки переключения проекций """
+        sender = self.sender()
+        if sender == self.tbutton_md_incl:
+            chart = self.chart_md_incl
+        elif sender == self.tbutton_md_azim:
+            chart = self.chart_md_azim
+        else:
+            chart = self.chart_azim_incl
+
+        chart.show() if is_toggled else chart.hide()
 
     def _get_table_item(self, value):
         """
@@ -141,6 +157,6 @@ class MyApp(MyAppUI):
             plot_curve_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
             return plot_curve_item
 
-        self.chart1.addItem(get_curve(ProjType.MD_INCL))
-        self.chart2.addItem(get_curve(ProjType.MD_AZIM))
-        self.chart3.addItem(get_curve(ProjType.AZIM_INCL))
+        self.chart_md_incl.addItem(get_curve(ProjType.MD_INCL))
+        self.chart_md_azim.addItem(get_curve(ProjType.MD_AZIM))
+        self.chart_azim_incl.addItem(get_curve(ProjType.AZIM_INCL))

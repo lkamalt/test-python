@@ -22,7 +22,6 @@ class MyAppUI(QtWidgets.QWidget):
         # Поле для вывода названия las-файла, оно недоступно для редактирования
         self.label_file_path = QtWidgets.QLabel('Название файла')
         self.edit_file_path = QtWidgets.QLineEdit()
-        # self.edit_file_path.setSizePolicy(size_policy)
         self.edit_file_path.setReadOnly(True)
         
         # Кнопка Browse для выбора las-файла
@@ -30,11 +29,11 @@ class MyAppUI(QtWidgets.QWidget):
         self.button_browse.setSizePolicy(size_policy)
         
         # Горизонтальная сетка для элементов отображения и выбора файла
-        self.hgrid_file = QtWidgets.QHBoxLayout()
+        hgrid_file = QtWidgets.QHBoxLayout()
         # Добавляем виджеты в горизонтальную сетку для элементов загружаемого файла
-        self.hgrid_file.addWidget(self.label_file_path)
-        self.hgrid_file.addWidget(self.edit_file_path)
-        self.hgrid_file.addWidget(self.button_browse)
+        hgrid_file.addWidget(self.label_file_path)
+        hgrid_file.addWidget(self.edit_file_path)
+        hgrid_file.addWidget(self.button_browse)
 
         # Таблицы для отображения параметров траектории -------------------------------------------
         self.tab_params = QtWidgets.QTabWidget()
@@ -48,35 +47,49 @@ class MyAppUI(QtWidgets.QWidget):
         self.tab_params.addTab(self.table_params_c, 'Пользовательские функции')
         self.tab_params.addTab(self.table_params_np, 'Numpy')
 
-        # Виджеты для графиков
-        self.chart1 = self._get_chart(ProjType.MD_INCL)
-        self.chart2 = self._get_chart(ProjType.MD_AZIM)
-        self.chart3 = self._get_chart(ProjType.AZIM_INCL)
+        # Виджеты для графиков --------------------------------------------------------------------
+        self.chart_md_incl = self._get_chart(ProjType.MD_INCL)
+        self.chart_md_azim = self._get_chart(ProjType.MD_AZIM)
+        self.chart_azim_incl = self._get_chart(ProjType.AZIM_INCL)
+
+        # Кнопки для переключения проекций --------------------------------------------------------
+        self.tbutton_md_incl = self._get_tool_button('MD-INCL')
+        self.tbutton_md_azim = self._get_tool_button('MD-AZIM')
+        self.tbutton_azim_incl = self._get_tool_button('AZIM-INCL')
+
+        # Горизонтальная сетка для кнопок управления видимостью проекций
+        hgrid_tbuttons = QtWidgets.QHBoxLayout()
+        hgrid_tbuttons.addWidget(self.tbutton_md_incl)
+        hgrid_tbuttons.addWidget(self.tbutton_md_azim)
+        hgrid_tbuttons.addWidget(self.tbutton_azim_incl)
+        hgrid_tbuttons.addStretch()
 
         # Вертикальная сетка для таблицы с параметрами и виджета с графиком
-        self.vgrid_table_params_and_graph = QtWidgets.QVBoxLayout()
+        vgrid_table_params_and_graph = QtWidgets.QVBoxLayout()
         # Добавление табвиджета с таблицами параметров траектории
-        self.vgrid_table_params_and_graph.addWidget(self.tab_params, 1)
+        vgrid_table_params_and_graph.addWidget(self.tab_params, 1)
         # Добавление виджетов с графиками
-        self.vgrid_table_params_and_graph.addWidget(self.chart1, 2)
-        self.vgrid_table_params_and_graph.addWidget(self.chart2, 2)
-        self.vgrid_table_params_and_graph.addWidget(self.chart3, 2)
+        vgrid_table_params_and_graph.addWidget(self.chart_md_incl, 2)
+        vgrid_table_params_and_graph.addWidget(self.chart_md_azim, 2)
+        vgrid_table_params_and_graph.addWidget(self.chart_azim_incl, 2)
+        # Добавление кнопок для управления видимостью проекций
+        vgrid_table_params_and_graph.addLayout(hgrid_tbuttons)
 
-        # Таблица для отображения загруженных из las-файла данных
+        # Таблица для отображения загруженных из las-файла данных ----------------------------------
         self.table_trj = QtWidgets.QTableWidget()
         self.table_trj.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
 
         # Горизонтальная сетка для сетки с табвиджетом и графиком и таблицы с таректорией
-        self.hgrid_trj = QtWidgets.QHBoxLayout()
-        self.hgrid_trj.addLayout(self.vgrid_table_params_and_graph)
-        self.hgrid_trj.addWidget(self.table_trj)
+        hgrid_trj = QtWidgets.QHBoxLayout()
+        hgrid_trj.addLayout(vgrid_table_params_and_graph)
+        hgrid_trj.addWidget(self.table_trj)
 
         # Вертикальная сетка - основная -----------------------------------------------------------
-        self.vgrid = QtWidgets.QVBoxLayout()
-        self.vgrid.addLayout(self.hgrid_file)
-        self.vgrid.addLayout(self.hgrid_trj)
+        vgrid = QtWidgets.QVBoxLayout()
+        vgrid.addLayout(hgrid_file)
+        vgrid.addLayout(hgrid_trj)
 
-        self.setLayout(self.vgrid)
+        self.setLayout(vgrid)
 
     def _get_chart(self, proj_type):
         """
@@ -133,6 +146,18 @@ class MyAppUI(QtWidgets.QWidget):
         table_params.setColumnCount(3)
         table_params.setVerticalHeaderLabels(['Среднее', 'СКО', 'Медиана'])
         table_params.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-        table_params.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        table_params.resizeRowsToContents()
 
         return table_params
+
+    def _get_tool_button(self, name):
+        """
+        Создание кнопки для управления видимостью графиков
+        :param name: название кнопки, str
+        :return: кнопка - объект класса QToolButton
+        """
+        tbutton = QtWidgets.QToolButton()
+        tbutton.setCheckable(True)
+        tbutton.setChecked(True)
+        tbutton.setText(name)
+        return tbutton
